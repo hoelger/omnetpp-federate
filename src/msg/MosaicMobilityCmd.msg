@@ -30,10 +30,12 @@ cplusplus {{
 namespace omnetpp_federate;
 
 enum MobilityCommandType {
-    MOBILITY_CMD_MOVE_NODES = 1;
-    MOBILITY_CMD_ADD_NODES = 2;
-    MOBILITY_CMD_ADD_RSU_NODES = 3;
-    MOBILITY_CMD_REMOVE_NODES = 4;
+    MOBILITY_CMD_ADD_RADIO_VEH_NODE = 1;
+    MOBILITY_CMD_ADD_RADIO_RSU_NODE = 2;
+    MOBILITY_CMD_ADD_WIRED_NODE = 5;
+    MOBILITY_CMD_ADD_NODE_B = 10;
+    MOBILITY_CMD_MOVE_NODES = 20;
+    MOBILITY_CMD_REMOVE_NODE = 21;
 };
 
 class MosaicMobilityCmd extends inet::Request {

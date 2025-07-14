@@ -32,7 +32,7 @@ cplusplus {{
 namespace omnetpp_federate;
 
 enum ConfigurationCommandType {
-    CONFIGURATION_CMD_CONF_RADIO = 1;
+    CONFIGURATION_CMD_CONFIGURE_WIFI_RADIO = 1;
 };
 
 //

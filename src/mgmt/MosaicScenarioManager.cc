@@ -82,7 +82,7 @@ void MosaicScenarioManager::handleMessage(cMessage *msg) {
     MosaicMobilityCmd *cmd = check_and_cast<MosaicMobilityCmd *>(msg);
     EV << "MosaicScenarioManager received command: " << cmd->getCmdType()
        << std::endl;
-    if (cmd->getCmdType() == MOBILITY_CMD_ADD_NODES) {
+    if (cmd->getCmdType() == MOBILITY_CMD_ADD_RADIO_VEH_NODE) {
       for (unsigned int i = 0; i < cmd->getNodeIdArraySize(); i++) {
         nodeId = cmd->getNodeId(i);
         position = cmd->getPosition(i);
@@ -91,7 +91,7 @@ void MosaicScenarioManager::handleMessage(cMessage *msg) {
                  << std::endl;
         addNode(nodeId, position);
       }
-    } else if (cmd->getCmdType() == MOBILITY_CMD_ADD_RSU_NODES) {
+    } else if (cmd->getCmdType() == MOBILITY_CMD_ADD_RADIO_RSU_NODE) {
       for (unsigned int i = 0; i < cmd->getNodeIdArraySize(); i++) {
         nodeId = cmd->getNodeId(i);
         position = cmd->getPosition(i);
@@ -109,7 +109,7 @@ void MosaicScenarioManager::handleMessage(cMessage *msg) {
                  << std::endl;
         moveNode(nodeId, position);
       }
-    } else if (cmd->getCmdType() == MOBILITY_CMD_REMOVE_NODES) {
+    } else if (cmd->getCmdType() == MOBILITY_CMD_REMOVE_NODE) {
       for (unsigned int i = 0; i < cmd->getNodeIdArraySize(); i++) {
         nodeId = cmd->getNodeId(i);
         EV_DEBUG << "MosaicScenarioManager REMOVE_NODES: " << nodeId
@@ -119,13 +119,13 @@ void MosaicScenarioManager::handleMessage(cMessage *msg) {
     }
   } else if (strcmp(msg->getName(), "MosaicCommunicationCmd") == 0) {
     MosaicCommunicationCmd *cmd = check_and_cast<MosaicCommunicationCmd *>(msg);
-    if (cmd->getCmdType() == COMMUNICATION_CMD_SEND_MESSAGE) {
+    if (cmd->getCmdType() == COMMUNICATION_CMD_SEND_WIFI_MESSAGE) {
       EV_DEBUG << "MosaicScenarioManager SEND_MESSAGE" << std::endl;
       sendV2xMessage(msg);
     }
   } else if (strcmp(msg->getName(), "MosaicConfigurationCmd") == 0) {
     MosaicConfigurationCmd *cmd = check_and_cast<MosaicConfigurationCmd *>(msg);
-    if (cmd->getCmdType() == CONFIGURATION_CMD_CONF_RADIO) {
+    if (cmd->getCmdType() == CONFIGURATION_CMD_CONFIGURE_WIFI_RADIO) {
       EV_DEBUG << "MosaicScenarioManager CONF_RADIO" << std::endl;
       configureRadio(msg);
     }

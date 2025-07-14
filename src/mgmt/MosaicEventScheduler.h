@@ -70,12 +70,11 @@ private:
   void receiveInteractions();
 
   void processShutDown();
+  void processAddNode();
   void processUpdateNode();
-  MosaicMobilityCmd *processUpdateNodeCommand(
-      const unsigned int numNodes, CSC_update_node_return &update_node_message,
-      MobilityCommandType cmd_type, const bool newPosition = true);
-  void processMsgSend();
-  void processConfRadio();
+  void processRemoveNode();
+  void processSendWifiMsg();
+  void processConfWifiRadio();
   void processAdvanceTime();
 };
 
