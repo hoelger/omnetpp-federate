@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef __CLIENTSERVERCHANNEL_H__
-#define __CLIENTSERVERCHANNEL_H__
+#ifndef CLIENT_SERVER_CHANNEL_H
+#define CLIENT_SERVER_CHANNEL_H
 
 #undef NaN
 #include "ClientServerChannelMessages.pb.h"
@@ -31,187 +31,180 @@
 typedef int SOCKET;
 constexpr const int SOCKET_ERROR = -1;
 constexpr const int INVALID_SOCKET = -1;
+constexpr const int PROTOCOL_VERSION = 2;
 
 /**
- * Abstraction of socket communication between Ambassador and Federate (e.g.
- * ns-3 or OMNeT++).
+ * Abstraction of socket communication between Ambassador and Federate (e.g. ns-3 or OMNeT++).
  */
 namespace ClientServerChannelSpace {
 
-enum CMD {
-    CMD_UNDEF = -1,
-    //--> Federation management
-    CMD_INIT = 1,
-    CMD_SHUT_DOWN = 2,
-    //--> Update messages
-    CMD_UPDATE_NODE = 10,
-    CMD_REMOVE_NODE = 11,
-    //--> Advance Time
-    CMD_ADVANCE_TIME = 20,
-    CMD_NEXT_EVENT = 21,
-    CMD_MSG_RECV = 22,
-    //--> Communication
-    CMD_MSG_SEND = 30,
-    CMD_CONF_RADIO = 31,
-    //--> General
-    CMD_END = 40,
-    CMD_SUCCESS = 41
-};
-
-enum RADIO_NUMBER { NO_RADIO = 0, SINGLE_RADIO = 1, DUAL_RADIO = 2 };
-
-enum CHANNEL_MODE {
-    SINGLE_CHANNEL = 1, /* Radio stays on one channel the whole time */
-    DUAL_CHANNEL = 2    /* Radio alternates between two channels */
-};
-
-enum UPDATE_NODE_TYPE {
-    UPDATE_ADD_RSU = 1,
-    UPDATE_ADD_VEHICLE = 2,
-    UPDATE_MOVE_NODE = 3,
-    UPDATE_REMOVE_NODE = 4
-};
-
-enum RADIO_CHANNEL {
-    SCH1 = 0,
-    SCH2 = 1,
-    SCH3 = 2,
-    CCH = 3,
-    SCH4 = 4,
-    SCH5 = 5,
-    SCH6 = 6,
-    UNDEF_CHANNEL = 7
-};
-
-struct CSC_init_return {
-    int64_t start_time;
-    int64_t end_time;
-};
-
-struct CSC_node_data {
-    int id;
-    double x;
-    double y;
-};
-
-struct CSC_radio_config {
-    bool turnedOn;
-    uint32_t ip_address;
-    uint32_t subnet;
-    double tx_power;
-    CHANNEL_MODE channelmode;
-    RADIO_CHANNEL primary_channel;
-    RADIO_CHANNEL secondary_channel;
-};
-
-struct CSC_config_message {
-    int64_t time;
-    int msg_id;
-    int node_id;
-    RADIO_NUMBER num_radios;
-    CSC_radio_config primary_radio;
-    CSC_radio_config secondary_radio;
-};
-
-struct CSC_update_node_return {
-    UPDATE_NODE_TYPE type;
-    int64_t time;
-    std::vector<CSC_node_data> properties;
-};
-
-struct CSC_topo_address {
-    uint32_t ip_address;
-    int ttl;
-};
-
-struct CSC_send_message {
-    int64_t time;
-    int node_id;
-    RADIO_CHANNEL channel_id;
-    int message_id;
-    int length;
-    CSC_topo_address topo_address;
-};
-
 class ClientServerChannel {
 
-public:
-    /** Constructor. */
-    ClientServerChannel();
+    public:
+        /** 
+         * @brief Constructor
+         */
+        ClientServerChannel();
 
-    /** Destructor. */
-    virtual ~ClientServerChannel();
+        /**
+         * @brief Destructor
+         *
+         * Closes existing network connections.
+         */
+        ~ClientServerChannel();
 
-    /** Prepares connection with a socket bound to the given port on host. */
-    virtual int prepareConnection(std::string host, uint32_t port);
+        /**
+         * Provides server socket to listen for incoming connections from ns3 Ambassador
+         *
+         * @param host own hostname (hostaddress)
+         * @param port port to listen on for incoming connections. If no port is given, a random port is assigned.
+         * @return assigned port number
+         */
+        int prepareConnection(std::string host, uint32_t port);
 
-    /** Accepts connection to socket */
-    virtual void connect();
+        /**
+         * @brief Accepts a connection (blocking)
+         * The resulting connection is stored in the working socket
+         */
+        void connect();
 
-    /*################## READING ####################*/
+        /*################## READING ####################*/
 
-    /** reads a command via protobuf and returns it */
-    virtual CMD readCommand();
+        /**
+         * Gets command from NS3 Ambassador to select dedicated action.
+         *
+         * @return command from Ambassador
+         *
+         */
+        CommandMessage_CommandType readCommand();
+        
+        /**
+         * Reads an InitMessage from the Channel
+         *
+         * @return InitMessage message
+         */
+        InitMessage readInitMessage();
 
-    /** reads an initialization message and returns it */
-    virtual int readInit(CSC_init_return &return_value);
+        /**
+         * Reads a TimeMessage from the channel
+         *
+         * @return the time as long
+         */
+        int64_t readTimeMessage();
 
-    /** reads a add RSU message and returns it */
-    virtual int readUpdateNode(CSC_update_node_return &return_value);
+        /**
+         * Reads an AddNode message from the channel.
+         *
+         * @return AddNode message
+         */
+        AddNode readAddNode(void);
 
-    /** Reads a configuration message from the channel and returns it */
-    virtual int readConfigurationMessage(CSC_config_message &return_value);
+        /**
+         * Reads an update Node message from the channel.
+         *
+         * @return UpdateNode message
+         */
+        UpdateNode readUpdateNode(void);
 
-    /** Reads a send message command and returns the corresponding message struct
-     */
-    virtual int readSendMessage(CSC_send_message &return_value);
+        /**
+         * Reads an RemoveNode message from the channel.
+         *
+         * @return RemoveNode message
+         */
+        RemoveNode readRemoveNode(void);
+        
+        /**
+         * Reads a ConfigureWifiRadio message from the channel
+         *
+         * @return ConfigureWifiRadio message
+         */
+        ConfigureWifiRadio readConfigureWifiRadio(void);
 
-    /** Reads TimeMessage from the channel and returns the contained time as a
-     * long */
-    virtual int64_t readTimeMessage();
+        /**
+         * Reads a SendWifiMessage message from the channel
+         *
+         * @return SendWifiMessage message
+         */
+        SendWifiMessage readSendWifiMessage(void);
 
-    /*################## WRITING ####################*/
+        /**
+         * Reads a ConfigureCellRadio message from the channel
+         *
+         * @return ConfigureCellRadio message
+         */
+        ConfigureCellRadio readConfigureCellRadio(void);
 
-    /** Byte protocol control method for writeCommand. */
-    virtual void writeCommand(CMD cmd);
+        /**
+         * Reads a SendCellMessage message from the channel
+         *
+         * @return SendCellMessage message
+         */
+        SendCellMessage readSendCellMessage(void);
 
-    /** Write a message containing a port number to the output */
-    virtual void writePort(uint32_t port);
+        /*################## WRITING ####################*/
 
-    /** Request a time advance from the RTI */
-    virtual void writeTimeMessage(int64_t time);
+        /**
+         * Sends own control commands to ambassador
+         * Such control commands must be written onto the channel before every data body
+         *
+         * @param cmd command to be written to ambassador
+         */
+        void writeCommand(CommandMessage_CommandType cmd);
 
-    /** Signal and hand a received Message to the RTI */
-    virtual void writeReceiveMessage(uint64_t time, int node_id, int message_id,
-                                     RADIO_CHANNEL channel, int rssi);
+        /**
+         * Sends port to ambassador. Write a message containing a port number to the output
+         *
+         * @param port port
+         */
+        void writePort(uint32_t port);
 
-private:
-    /** Initial server sock, which accepts connection of Ambassador. */
-    SOCKET servsock;
+        /**
+         * Writes a time onto the channel and thereby request a time advance from the RTI
+         *
+         * @param time the time to write
+         */
+        void writeTimeMessage(int64_t time);
 
-    /** Working sock for communication. */
-    SOCKET sock;
+        /**
+         * Writes a ReceiveWifiMessage message onto the channel.
+         *
+         * @param time the simulation time at which the message receive occured
+         * @param node_id the id of the receiving node
+         * @param message_id the id of the received message
+         * @param channel the receiver channel
+         * @param rssi the rssi during the receive event
+         */
+        void writeReceiveWifiMessage(uint64_t time, int node_id, int message_id, RadioChannel channel, int rssi);
+        
+        /**
+         * Writes a ReceiveCellMessage message onto the channel.
+         *
+         * @param time the simulation time at which the message receive occured
+         * @param node_id the id of the receiving node
+         * @param message_id the id of the received message
+         */
+        void writeReceiveCellMessage(uint64_t time, int node_id, int message_id);
 
-    /** Socket name **/
-    std::string channel_name;
+    private:
+        /** Initial server socket
+         * always on the lookout for new connections on that port
+         * accepts connection from Ambassador
+         */
+        SOCKET servsock;
 
-    /** Converts commands to protobuf-internal commands */
-    virtual CommandMessage_CommandType cmdToProtoCMD(CMD cmd);
+        /** Working sock for communication. */
+        SOCKET sock;
 
-    /** Converts protobuf commands to CMD enum */
-    virtual CMD protoCMDToCMD(CommandMessage_CommandType cmd);
-
-    /** Reads a Varint from a socket and returns it */
-    virtual std::shared_ptr<uint32_t> readVarintPrefix(SOCKET sock);
-
-    /** converts a channel given as a protobuf internal enum to our channel enum
-     */
-    virtual RADIO_CHANNEL protoChannelToChannel(RadioChannel protoChannel);
-
-    /** converts a channel given as our channel enum to a protobuf internal
-     * channel enum */
-    virtual RadioChannel channelToProtoChannel(RADIO_CHANNEL channel);
+        /**
+         * @brief Reads a variable length integer from the socket and returns it
+         *
+         * Protobuf messages are not self delimiting and have thus to be prefixed with the length of the message.
+         * When sent from Java, before every message there will be a variable length integer sent.
+         * This method reads such an integer of variable length
+         *
+         */
+        std::shared_ptr < uint32_t > readVarintPrefix(SOCKET sock);
 };
 
 } // namespace ClientServerChannelSpace
-#endif
+#endif /* CLIENT_SERVER_CHANNEL_H */
