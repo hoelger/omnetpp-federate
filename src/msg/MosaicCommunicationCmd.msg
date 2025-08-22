@@ -40,7 +40,7 @@ cplusplus{{
 namespace omnetpp_federate;
 
 enum CommunicationCommandType {
-    COMMUNICATION_CMD_SEND_MESSAGE = 1;
+    COMMUNICATION_CMD_SEND_WIFI_MESSAGE = 1;
 };
 
 class MosaicCommunicationCmd extends inet::Request {
