@@ -283,6 +283,10 @@ InitMessage ClientServerChannel::readInitMessage() {
         LOG_ERROR("Do not have correct protocol version. Have: " << msg.protocol_version() << " Require: " << PROTOCOL_VERSION);
         exit(1);
     }
+    if (msg.preemptive_execution() == true) {
+        LOG_ERROR("Omnet does not support preemptive execution yet.");
+        exit(1);
+    }
     return msg;
 }
 
